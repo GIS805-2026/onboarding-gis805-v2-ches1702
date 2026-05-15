@@ -63,7 +63,7 @@ Qu'est-ce qui cloche ?
 
 ## Après le push
 
-GitHub Classroom rejoue les mêmes commandes via `.github/workflows/classroom.yml`
+GitHub Classroom rejoue les mêmes commandes via `.github/workflows/lasscroom.yml`
 dans un environnement propre. Si `make check` passe chez vous mais échoue
 sur GitHub, c'est presque toujours l'un de :
 
