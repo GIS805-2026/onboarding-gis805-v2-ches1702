@@ -10,11 +10,11 @@
 --   * Surrogate key (_key): an integer you control, independent of the source
 --                            (useful for SCD2 where the same _id has several versions)
 --
--- This pattern reads from `raw_dim_customer` -- the table produced by
+-- This pattern reads from `raw_dim_product` -- the table produced by
 -- `make load` after `make generate` drops dim_customer.csv into data/synthetic.
 -- ============================================================
 
-CREATE OR REPLACE TABLE dim_customer AS
+CREATE OR REPLACE TABLE dim_product AS
 SELECT
     ROW_NUMBER() OVER (ORDER BY customer_id) AS customer_key,  -- surrogate
     customer_id,                                                -- natural key
