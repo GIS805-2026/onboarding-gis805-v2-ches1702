@@ -1,8 +1,10 @@
 # Rétroaction automatisée -- S01 (Diagnostic fondamental -- NexaMart kickoff)
 
-_Générée le 2026-05-15T01:36:39+00:00 -- Run `20260515T013554Z-4cff8f73`_
+_Générée le 2026-05-15T12:37:42+00:00 -- Run `20260515T122624Z-00a5a04f`_
 
 Ce document est produit par un pipeline reproductible (vérification SQL déterministe + analyse LLM du brief et de la déclaration IA). Une revue humaine précède toujours sa publication. **À ce stade expérimental, aucune note ni étiquette de niveau n'est diffusée : l'objectif est purement formatif.**
+
+> ⚠️ **Avertissement instructeur (à retirer avant publication) :** cette analyse a été générée avec `--skip-pull`. Le contenu correspond au commit local et **n'est peut-être pas la dernière version poussée par l'étudiant·e**.
 
 ---
 
@@ -90,7 +92,6 @@ ORDER BY region;
 
 **Pistes :**
 > Requête extraite par LLM (aucun bloc fencé détecté). Encadrez votre requête finale par ```sql ... ``` pour éliminer toute ambiguïté.
-> Votre `db/nexamart.duckdb` est absente ou vide ; la requête a été exécutée contre une **base de référence cohorte** (seed instructeur). Les chiffres retournés ne correspondent donc pas à vos propres données : reconstruisez votre base avec `python src/run_pipeline.py` (ou `.\run.ps1 load`) pour valider vos calculs sur votre seed personnel.
 > Synonymes acceptés par colonne:
   category: ['category', 'categorie', 'p.category', 'sous_categorie']
   region: ['region', 's.region']
@@ -99,59 +100,58 @@ ORDER BY region;
 
 ## 2. Rétroaction pédagogique sur le brief
 
-> Le brief produit des résultats exploitables pour 2025 et une requête de validation correcte, mais il manque la déclaration explicite du grain, la gestion des cas limites et une traçabilité git complète. Pour rendre le livrable board-ready, formalisez le grain et les patterns SCD, renforcez les checks automatisés et ajoutez un journal de décisions et commits.
+> Le livrable répond partiellement à la question CEO et produit des résultats exploitables pour 2025, mais il manque une énonciation claire du grain, des contrôles qualité reproductibles et une traçabilité git/IA complète. Priorisez la formalisation du grain, l'ajout de checks make check et un README exécutable pour rendre l'analyse production-ready.
 
 ### Observations par dimension
 
 **Model quality**
-- Observation : Le brief agrège par category, region et channel (GROUP BY p.category, s.region, f.channel_id, d.year, d.quarter) mais n'énonce pas explicitement le grain ni les choix SCD.
-- Piste d'amélioration : Déclarer le grain (ligne de commande vs commande), justifier le pattern SCD (Type 2 si historique nécessaire) et adapter le schéma en étoile (fact + 5 dims).
+- Observation : Le brief inclut la requête GROUP BY sur p.category, s.region, f.channel_id, d.year, d.quarter mais n'énonce pas clairement le grain ni ne traite les SCD ou la non-additivité du unit_price.
+- Piste d'amélioration : Précisez explicitement le grain (par ex. ligne de commande order_id+product_id), justifiez le pattern SCD choisi et mentionnez les attributs dimensionnels clés et pourquoi.
 
 **Validation quality**
-- Observation : Une requête de validation avec LAG() est fournie et le résultat tabulaire pour 2025 est affiché, prouvant que la requête s'exécute et produit des déclins par région.
-- Piste d'amélioration : Ajouter des contrôles make check (NULLs, doublons du grain, vérification des sommes vs lignes sources) et traiter explicitement les cas limites (NULL, valeurs aberrantes, unit_price non-additif).
+- Observation : L'auteur fournit une requête avec fenêtre LAG et un tableau de résultats montrant les declines par région et trimestre pour 2025.
+- Piste d'amélioration : Ajoutez des contrôles de qualité reproductibles (make check) et traitez les cas limites (NULLs, doublons du grain, vérification que SUM(line_total) correspond aux attentes).
 
 **Executive justification**
-- Observation : La section 'Réponse exécutive' liste clairement quelles catégories/channels régionales déclinent (ex. Automotive en Alberta Q4 2025) et propose d'intégrer 2023–2024 pour creuser les causes.
-- Piste d'amélioration : Formuler en début de section une recommandation décisionnelle claire pour le CEO (p.ex. valider l'enrichissement des années 2023–24 et autoriser la construction de l'entrepôt SCD v1).
+- Observation : La section 'Réponse exécutive' liste les catégories/régions/trimestres en baisse et la recommandation d'intégrer 2023–2024 pour investiguer les causes.
+- Piste d'amélioration : Formulez une recommandation décisionnelle claire et priorisée (ex. action à lancer cette semaine, impact attendu chiffré) et réduisez le détail technique pour le conseil d'administration.
 
 **Process trace**
-- Observation : Le brief inclut une commande duckdb et un chemin de workspace (@ches1702 ➜ /workspaces/...), mais il n'y a pas d'historique git ni de note IA structurée.
-- Piste d'amélioration : Inclure un log de commits git incrémental (≥3 commits) avec messages, et une note IA précisant outil, prompt et validation humaine.
+- Observation : Le brief montre une commande DuckDB depuis /workspaces/... mais il n'y a pas d'historique de commits ni une note IA détaillée sur l'usage de Claude.
+- Piste d'amélioration : Incluez un historique git avec plusieurs commits significatifs et une note IA précisant l'outil, ce qu'il a généré, et comment vous l'avez validé manuellement.
 
 **Reproducibility**
-- Observation : La commande DuckDB fournie montre comment exécuter la requête, mais le chemin est codé en dur et il manque un README/make check reproduisible pour un clone propre.
-- Piste d'amélioration : Fournir un README et un script 'make check' reproduisible, éviter les chemins codés en dur et décrire les dépendances pour exécution sur un clone propre.
+- Observation : Le script DuckDB est montré avec le chemin db/nexamart.duckdb, ce qui indique une exécution locale mais sans README ni script d'installation pour un clone propre.
+- Piste d'amélioration : Fournissez un README et des scripts (make run / make check) sans chemins codés en dur pour permettre à un pair de cloner et reproduire en <5 minutes.
 
 ## 3. Déclaration d'utilisation de l'IA
 
-> La déclaration documente bien les séances, les prompts et les actions humaines de validation. Il manque toutefois des précisions importantes (version/modèle des outils et mention explicite des limites ou erreurs observées).
+> La déclaration documente l'outil utilisé et quand l'IA a été sollicitée, ainsi que des actions de validation basiques. Il manque toutefois une section claire sur les limites ou erreurs observées et les versions/modèles précis de l'outil.
 
 **Sujets bien couverts dans votre déclaration :**
 
+- outils utilisés (nom + version/modèle)
 - à quelle étape l'IA a été utilisée
 - comment la sortie a été validée par l'humain
 
 **Sujets à ajouter ou expliciter pour la prochaine itération :**
 
-- outils utilisés (nom + version/modèle)
 - limites ou erreurs observées
 
 ## 4. Pistes d'action pour la prochaine itération
 
 - Reprendre la requête de la section « Preuve » pour qu'elle s'exécute sur `db/nexamart.duckdb` et qu'elle produise la forme attendue (voir pistes en section 1).
-- Compléter `ai-usage.md` en y ajoutant : outils utilisés (nom + version/modèle).
 - Compléter `ai-usage.md` en y ajoutant : limites ou erreurs observées.
 
 ---
 
 ## 5. Traçabilité
 
-- **Run ID :** `20260515T013554Z-4cff8f73`
+- **Run ID :** `20260515T122624Z-00a5a04f`
 - **Devoir :** `S01`
 - **Étudiant·e :** `ches1702`
 - **Commit analysé :** `64b6017`
-- **Audit (côté instructeur) :** `tools/instructor/feedback_pipeline/audit/20260515T013554Z-4cff8f73/ches1702/`
+- **Audit (côté instructeur) :** `tools/instructor/feedback_pipeline/audit/20260515T122624Z-00a5a04f/ches1702/`
 - **Prompts (SHA-256) :**
   - `sql_extractor_system` : `90ee9e277de7a27f...`
   - `rubric_grader_system` : `505f32d1d8319d66...`
